@@ -33,7 +33,7 @@ locals {
   as_blocks         = [for as in data.external.as : split("\n", chomp(as.result.value))]
 
 
-  blocks = flatten([local.aws_blocks, local.goo_blocks, local.github_blocks, local.cloudflare_blocks, local.as_blocks])
+  blocks = flatten([var.blocks, local.aws_blocks, local.goo_blocks, local.github_blocks, local.cloudflare_blocks, local.as_blocks])
 }
 
 resource "local_file" "block" {
