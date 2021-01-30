@@ -1,4 +1,3 @@
-output "blocks" {
-  # value = local.shink_blocks
-  value = var.shink_blocks ? local.shink_blocks : local.blocks
+output "shink_layered_blocks" {
+  value = local.shink_layered_blocks
 }

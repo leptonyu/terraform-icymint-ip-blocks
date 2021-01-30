@@ -32,18 +32,32 @@ locals {
   cloudflare_blocks = split("\n", chomp(data.http.cloudflare.body))
   as_blocks         = [for as in data.external.as : split("\n", chomp(as.result.value))]
 
+  blocks = flatten([var.base_blocks, local.aws_blocks, local.goo_blocks, local.github_blocks, local.cloudflare_blocks, local.as_blocks])
 
-  blocks = flatten([var.blocks, local.aws_blocks, local.goo_blocks, local.github_blocks, local.cloudflare_blocks, local.as_blocks])
+  default_blocks = [for x in split("\n", chomp(file(format("%s/default.txt", path.module)))) : x if can(regex("^\\d", x)) && var.use_predefined_blocks]
+
+  base_blocks = concat(local.default_blocks, local.blocks)
 }
 
 data "external" "block" {
   program = [format("%s/cidr.sh", path.module)]
   query = {
-    value = join("\n", local.blocks)
+    value = join("\n", local.base_blocks)
   }
 }
 
 locals {
   shink_blocks = split("\n", data.external.block.result.value)
+
+  shink_layered_blocks = { for k, n in data.external.layered_block : k => split("\n", n.result.value) }
 }
+
+data "external" "layered_block" {
+  for_each = var.layered_blocks
+  program  = [format("%s/cidr.sh", path.module)]
+  query = {
+    value = join("\n", flatten([local.shink_blocks, each.value]))
+  }
+}
+
 

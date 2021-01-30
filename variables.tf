@@ -1,9 +1,3 @@
-variable "shink_blocks" {
-  type        = bool
-  default     = true
-  description = "Shink IP blocks using cidr."
-}
-
 variable "as" {
   type = list(string)
   default = [
@@ -22,7 +16,13 @@ variable "as_path" {
   description = "AS template path."
 }
 
-variable "blocks" {
+variable "use_predefined_blocks" {
+  type        = bool
+  default     = true
+  description = "Use predefined blocks."
+}
+
+variable "base_blocks" {
   type = list(string)
   default = [
     "4.0.0.0/8",  # CenturyLink, Inc. 1992-12 1992-12-01  Originally Bolt Beranek and Newman Inc. (then GTE, then Genuity) 1992-12. Updated to Level 3 Communications, Inc. in 2007-04. Updated to CenturyLink in 2017-11.
@@ -35,4 +35,13 @@ variable "blocks" {
     "73.0.0.0/8"
   ]
   description = "Default IP blocks."
+}
+
+
+variable "layered_blocks" {
+  type = map(list(string))
+  default = {
+    default = []
+  }
+  description = "Layerd IP blocks."
 }
