@@ -1,6 +1,5 @@
 #!/bin/bash
-
 set -e
-eval "$(jq -r '@sh "KEY_PATH=\(.path)"')"
+eval "$(jq -r '@sh "VAL=\(.value)"')"
 
-jq -cnM "{ value: \"$(cat $KEY_PATH | cidr)\" }"
+jq -cnM "{ value: \"$(echo "$VAL" | grep '[0-9]' | cidr)\" }"

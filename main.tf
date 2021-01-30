@@ -36,19 +36,11 @@ locals {
   blocks = flatten([var.blocks, local.aws_blocks, local.goo_blocks, local.github_blocks, local.cloudflare_blocks, local.as_blocks])
 }
 
-resource "local_file" "block" {
-  content              = join("\n", local.blocks)
-  file_permission      = "0644"
-  directory_permission = "0755"
-  filename             = format("%s/all.txt", var.as_path)
-}
-
 data "external" "block" {
   program = [format("%s/cidr.sh", path.module)]
   query = {
-    path = format("%s/all.txt", var.as_path)
+    value = join("\n", local.blocks)
   }
-  depends_on = [local_file.block]
 }
 
 locals {
