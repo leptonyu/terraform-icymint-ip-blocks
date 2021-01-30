@@ -24,31 +24,54 @@ data "external" "as" {
 }
 
 locals {
-  aws_blocks = [for n in jsondecode(data.http.aws.body).prefixes : n.ip_prefix if !can(regex("^cn-", n.region))]
-  goo_blocks = [for n in jsondecode(data.http.google.body).prefixes :
-  n.ipv4Prefix if can(n.ipv4Prefix) && !can(regex("^3[45]\\.", n.ipv4Prefix))]
-  github_blocks = flatten([for k, n in jsondecode(data.http.github.body) : [for ip in n : ip if !can(regex(":", ip))]
-  if can(regex("^(hooks|web|api|git|pages|importer|actions|dependabot)$", k))])
-  cloudflare_blocks = split("\n", chomp(data.http.cloudflare.body))
-  as_blocks         = [for as in data.external.as : split("\n", chomp(as.result.value))]
+  map_blocks = {
+    aws = {
+      disable = var.disable_aws
+      blocks  = [for n in jsondecode(data.http.aws.body).prefixes : n.ip_prefix if !can(regex("^cn-", n.region))]
+    }
+    google = {
+      disable = var.disable_google
+      blocks = [for n in jsondecode(data.http.google.body).prefixes :
+      n.ipv4Prefix if can(n.ipv4Prefix) && !can(regex("^3[45]\\.", n.ipv4Prefix))]
+    }
+    github = {
+      disable = var.disable_github
+      blocks = flatten([for k, n in jsondecode(data.http.github.body) : [for ip in n : ip if !can(regex(":", ip))]
+      if can(regex("^(hooks|web|api|git|pages|importer|actions|dependabot)$", k))])
+    }
+    cloudflare = {
+      disable = var.disable_cloudflare
+      blocks  = split("\n", chomp(data.http.cloudflare.body))
+    }
 
-  blocks = flatten([var.base_blocks, local.aws_blocks, local.goo_blocks, local.github_blocks, local.cloudflare_blocks, local.as_blocks])
+    as = {
+      disable = false
+      blocks  = [for as in data.external.as : split("\n", chomp(as.result.value))]
+    }
 
-  default_blocks = [for x in split("\n", chomp(file(format("%s/default.txt", path.module)))) : x if can(regex("^\\d", x)) && var.use_predefined_blocks]
+    base = {
+      disable = false
+      blocks  = var.base_blocks
+    }
 
-  base_blocks = concat(local.default_blocks, local.blocks)
+    default = {
+      disable = !var.use_predefined_blocks
+      blocks  = [for x in split("\n", chomp(file(format("%s/default.txt", path.module)))) : x if can(regex("^\\d", x))]
+    }
+  }
+
+  blocks = flatten([for k, v in local.map_blocks : v.blocks if !v.disable])
 }
 
 data "external" "block" {
   program = [format("%s/cidr.sh", path.module)]
   query = {
-    value = join("\n", local.base_blocks)
+    value = join("\n", local.blocks)
   }
 }
 
 locals {
-  shink_blocks = split("\n", data.external.block.result.value)
-
+  shink_blocks         = split("\n", data.external.block.result.value)
   shink_layered_blocks = { for k, n in data.external.layered_block : k => split("\n", n.result.value) }
 }
 

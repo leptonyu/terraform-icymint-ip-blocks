@@ -1,3 +1,3 @@
-output "shink_layered_blocks" {
+output "blocks" {
   value = local.shink_layered_blocks
 }

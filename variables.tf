@@ -1,11 +1,35 @@
+variable "disable_aws" {
+  type        = bool
+  default     = false
+  description = "Disable AWS."
+}
+
+variable "disable_github" {
+  type        = bool
+  default     = false
+  description = "Disable github."
+}
+
+variable "disable_google" {
+  type        = bool
+  default     = false
+  description = "Disable google."
+}
+
+variable "disable_cloudflare" {
+  type        = bool
+  default     = false
+  description = "Disable cloudflare."
+}
+
 variable "as" {
   type = list(string)
   default = [
-    "AS32934",
-    "AS2906",
-    "AS46489",
-    "AS19679",
-    "AS17012"
+    "AS32934", # Facebook
+    "AS2906",  # Netflix
+    "AS46489", # Twitch
+    "AS19679", # Dropbox
+    "AS17012"  # Paypal
   ]
   description = "AS numbers."
 }
