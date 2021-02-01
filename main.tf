@@ -27,7 +27,7 @@ locals {
   map_blocks = {
     aws = {
       disable = var.disable_aws
-      blocks  = [for n in jsondecode(data.http.aws.body).prefixes : n.ip_prefix if !can(regex("^cn-", n.region))]
+      blocks  = [for n in jsondecode(data.http.aws.body).prefixes : n.ip_prefix if !can(regex("^cn-", n.region)) && !can(regex("^120",n.ip_prefix))]
     }
     google = {
       disable = var.disable_google
