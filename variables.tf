@@ -25,7 +25,6 @@ variable "disable_cloudflare" {
 variable "as" {
   type = list(string)
   default = [
-    # "AS20940", # AKAMAI
     "AS32934", # Facebook
     "AS2906",  # Netflix
     "AS46489", # Twitch
